@@ -4,13 +4,13 @@ namespace Ably;
 
 function generateJwt($headers, $payload, $secret = 'secret')
 {
-    $headers_encoded = base64url_encode(json_encode($headers));
-    $payload_encoded = base64url_encode(json_encode($payload));
+    $encodedHeaders = base64urlEncode(json_encode($headers));
+    $encodedPayload = base64urlEncode(json_encode($payload));
 
-    $signature = hash_hmac('SHA256', "$headers_encoded.$payload_encoded", $secret, true);
-    $signature_encoded = base64url_encode($signature);
+    $signature = hash_hmac('SHA256', "$encodedHeaders.$encodedPayload", $secret, true);
+    $encodedSignature = base64urlEncode($signature);
 
-    return "$headers_encoded.$payload_encoded.$signature_encoded";
+    return "$encodedHeaders.$encodedPayload.$encodedSignature";
 }
 
 function isJwtValid($jwt, $timeFn, $secret = 'secret')
@@ -19,17 +19,17 @@ function isJwtValid($jwt, $timeFn, $secret = 'secret')
     $tokenParts = explode('.', $jwt);
     $header = $tokenParts[0];
     $payload = $tokenParts[1];
-    $signature_provided = $tokenParts[2];
+    $tokenSignature = $tokenParts[2];
 
     // check the expiration time - note this will cause an error if there is no 'exp' claim in the jwt
     $expiration = json_decode(base64_decode($payload))->exp;
-    $is_token_expired = $expiration <= $timeFn();
+    $isTokenExpired = $expiration <= $timeFn();
 
     // build a signature based on the header and payload using the secret
     $signature = hash_hmac('SHA256', $header . "." . $payload, $secret, true);
-    $is_signature_valid = base64url_encode($signature) === $signature_provided;
+    $isSignatureValid = base64urlEncode($signature) === $tokenSignature;
 
-    return $is_signature_valid && !$is_token_expired;
+    return $isSignatureValid && !$isTokenExpired;
 }
 
 function parseJwt($jwt)
@@ -40,7 +40,7 @@ function parseJwt($jwt)
     return array('header' => $header, 'payload' => $payload);
 }
 
-function base64url_encode($str)
+function base64urlEncode($str)
 {
     return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
 }
