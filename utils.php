@@ -35,8 +35,8 @@ function isJwtValid($jwt, $timeFn, $secret = 'secret')
 function parseJwt($jwt)
 {
     $tokenParts = explode('.', $jwt);
-    $header = json_decode(base64_decode($tokenParts[0]));
-    $payload = json_decode(base64_decode($tokenParts[1]));
+    $header = json_decode(base64_decode($tokenParts[0]), true);
+    $payload = json_decode(base64_decode($tokenParts[1]), true);
     return array('header' => $header, 'payload' => $payload);
 }
 
